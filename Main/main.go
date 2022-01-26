@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"log"
+	"math/rand"
 	"net/http"
 	"strconv"
 
@@ -25,11 +26,26 @@ func getAllSuperHeroes(w http.ResponseWriter, r *http.Request) {
 }
 
 func createSuperHeroes(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var hero Superhero
+	_ = json.NewDecoder(r.Body).Decode(&hero)
+	hero.Id = rand.Intn(1000000)
+	superheroes = append(superheroes, hero)
+	json.NewEncoder(w).Encode(&hero)
 
 }
 
 func deleteSuperHeroes(w http.ResponseWriter, r *http.Request) {
-
+	w.Header().Set("Content-Type", "application/json")
+	params := mux.Vars(r)
+	for index, hero := range superheroes {
+		if strconv.Itoa(hero.Id) == params["id"] {
+			superheroes = append(superheroes[:index], superheroes[index+1:]...)
+			json.NewEncoder(w).Encode(hero)
+			break
+		}
+	}
+	json.NewEncoder(w).Encode("deletion successful")
 }
 
 func getSuperHeroeByName(w http.ResponseWriter, r *http.Request) {
